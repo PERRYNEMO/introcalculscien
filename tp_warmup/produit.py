@@ -1,4 +1,4 @@
-""" """
+""" cartesian product and power set"""
 
 
 def produit[X, Y](x: list[X], y: list[Y]) -> list[tuple[X, Y]]:
