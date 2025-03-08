@@ -1,9 +1,9 @@
-""""""
+""" implementing the newton and bisection algorithm"""
 import math
 from typing import Callable
 
 
-def relative_error(eps: float = 1e-16, delta: float = 1e-16) \
+def relative_error_condition(eps: float = 1e-16, delta: float = 1e-16) \
         -> Callable[[float, float], bool]:
     """create relative error function
 
@@ -13,9 +13,9 @@ def relative_error(eps: float = 1e-16, delta: float = 1e-16) \
     """
     return lambda a,b:abs(b-a)<eps*(abs(a)+abs(b))+delta
 
-def absolute_error(eps: float= 1e-16) \
+def absolute_error_condition(eps: float= 1e-16) \
         -> Callable[[float, float], bool]:
-    """create absolute error function
+    """create absolute error condition function
 
     :param eps: precision
     :return: lamda function that tells if a and b are close enough
@@ -27,7 +27,7 @@ def absolute_error(eps: float= 1e-16) \
 def newton(
         f: Callable[[float], float],
         df: Callable[[float], float], x0: float,
-        stop_condition : Callable[[float, float], bool] = relative_error(),
+        stop_condition : Callable[[float, float], bool] = relative_error_condition(),
         max_iter: int=100
 ) -> float:
     """find the root of a function using Newton's method
@@ -35,7 +35,7 @@ def newton(
     :param f: The function for which the root is sought
     :param df: The derivative of the function f
     :param x0: Initial guess for the root.
-    :param stop_condition: a function that tells if a and b are close enough
+    :param stop_condition: a function that tells if we can stop with a good precision
     :param max_iter: Maximum number of iterations (default is 100)
     :return: The computed root
 
@@ -66,14 +66,30 @@ def newton(
     raise RuntimeError("Newton did not converge")
 
 
-def bisection(f, a, b, stop_condition=relative_error(), max_iter=100):
+def bisection(
+        f: Callable[[float], float],
+        a: float, b: float, stop_condition=relative_error_condition(), max_iter=100
+) -> float:
+    """find the root of a function using Bisection method
+
+    :param f: The function for which the root is sought
+    :param a: first bound of interval
+    :param b: second bound of interval
+    :param stop_condition: a function that tells if we can stop with a good precision
+    :param max_iter: maximum number of iterations (default is 100)
+    :return: computed root
+
+    :raises ValueError: if a and b are not finite, if the sign of a and b are not different,
+    if f(x) is not defined
+    :raises RuntimeError: If the maximum number of iterations is reached
+    """
     if not math.isfinite(a):
-        raise AssertionError("a is not finite")
+        raise ValueError("a is not finite")
     if not math.isfinite(b):
-        raise AssertionError("b is not finite")
+        raise ValueError("b is not finite")
     fa= f(a)
     if fa*f(b)>0:
-        raise Exception('bisection failed')
+        raise ValueError('sign of f(a) and f(b) are not different')
     if fa<0:
         a, b = b, a
     n = 0
@@ -82,7 +98,7 @@ def bisection(f, a, b, stop_condition=relative_error(), max_iter=100):
         x = (a+b)/2
         fx = f(x)
         if not math.isfinite(fx):
-            raise Exception('f is not defined at '+x)
+            raise ValueError('f is not defined at '+x)
         if fx>0:
             a = x
         elif fx<0:
@@ -91,4 +107,4 @@ def bisection(f, a, b, stop_condition=relative_error(), max_iter=100):
             return x
     if n<=max_iter:
         return (a + b) / 2
-    raise Exception('bisection failed')
+    raise RuntimeError('bisection takes too long')
