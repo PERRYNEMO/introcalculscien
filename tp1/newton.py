@@ -48,6 +48,7 @@ def newton(
     if not math.isfinite(x0):
         raise ValueError("x0 is not finite")
     x=x0
+    x0=x+100
     n = 0
     while not stop_condition(x, x0) and n <= max_iter:
         n +=1
@@ -58,7 +59,7 @@ def newton(
         if not math.isfinite(dfx):
             raise ValueError('f derivative is not defined at '+x)
         if abs(dfx)<1e-12:
-            raise ValueError("f derivative to small at "+x+" newton did not converge")
+            raise ValueError("f derivative to small at "+x+" newton will not converge")
         x0 = x
         x = x - fx/dfx
     if n <= max_iter:
@@ -68,7 +69,7 @@ def newton(
 
 def bisection(
         f: Callable[[float], float],
-        a: float, b: float, stop_condition=relative_error_condition(), max_iter=100
+        a: float, b: float, stop_condition=relative_error_condition(), max_iter=200
 ) -> float:
     """find the root of a function using Bisection method
 
