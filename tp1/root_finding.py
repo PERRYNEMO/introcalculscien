@@ -6,23 +6,53 @@ import math
 from tp1.newton import bisection, find_root_best, Function
 
 
-def get_gb(b):
+def get_gb(b: float) -> Function:
+    """get gb
+
+    :param b:  parameter
+    :return: the function gb
+    """
     return lambda a: (b ** 2) * (math.exp(a) + a ** 3) - a ** 2 - 4 * a
 
 
-def get_derivative_gb(b):
+def get_derivative_gb(b: float) -> Function:
+    """get derivative of gb
+
+    :param b:  parameter
+    :return: the derivative of gb
+    """
     return lambda a: (b ** 2) * (math.exp(a) + 3 * a ** 2) - 2 * a - 4
 
 
-def get_second_derivative_gb(b):
+def get_second_derivative_gb(b: float) -> Function:
+    """get second derivative of gb
+
+    :param b:  parameter
+    :return: the second derivative of gb
+    """
     return lambda a: (b ** 2) * (math.exp(a) + 6 * a) - 2
 
 
-def get_third_derivative_gb(b):
+def get_third_derivative_gb(b: float) -> Function:
+    """get third derivative of gb
+
+    :param b:  parameter
+    :return: the third derivative of gb
+    """
     return lambda a: (b ** 2) * (math.exp(a) + 6)
 
 
-def h(b):
+def h(b: float) -> float:
+    """it is the function that at each b reel associate the min of the function
+    gb in the positif
+
+    :param b:  parameter
+    :return: the minimum of gb in positif
+
+    :raise ValueError: if the function is not defined
+    """
+    if abs(b) > 2:
+        raise ValueError('b there is no minimum, the function is not defined')
     if abs(b) > 0.5:
         return find_root_best(get_derivative_gb(b), get_second_derivative_gb(b),
                               0, 4)
@@ -32,22 +62,32 @@ def h(b):
                           get_second_derivative_gb(b))
 
 
+def find_last_root(b: float, x0: float, f: Function, df: Function,
+                   max_iter: int = 100) -> float:
+    """
 
+    :param b:
+    :param x0:
+    :param f:
+    :param df:
+    :param max_iter:
+    :return:
 
-def find_last_root(b, x0, f, df, max_iter=100):
-    n = 0
-    k = math.log(1 / b) * 0.1
-    fx0 = f(x0)
-    tk = 100
-    ftk = f(tk)
+    :raise ValueError: if the function is not defined
+    """
+    n: int = 0
+    k: float = math.log(1 / b) * 0.1
+    fx0: float = f(x0)
+    tk: float = 100
+    ftk: float = f(tk)
     while ftk * fx0 > 0 and n <= max_iter:
         try:
             tk = x0 + k - f(k + x0) / df(k + x0)
-        except:
+        except OverflowError:
             k /= 1.05
         try:
             ftk = f(tk)
-        except:
+        except OverflowError:
             k *= 1.1
         n = n + 1
         k /= 1.05
@@ -76,4 +116,4 @@ def continu(b):
     hb = h(b)
     a2 = find_root_best(get_gb(b), get_derivative_gb(b), -0.5, hb)
     a3 = find_last_root(b, hb, get_gb(b), get_derivative_gb(b))
-    return a1,a2,a3
+    return a1, a2, a3

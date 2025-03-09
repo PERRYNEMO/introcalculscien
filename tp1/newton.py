@@ -95,8 +95,8 @@ def newton(f: Function, df: Function, x0: float, stop_condition: Callable[
     raise RuntimeError("Newton did not converge")
 
 
-def bisection(f: Function, a: float, b: float,
-              stop_condition=relative_error_condition(), max_iter=200) -> float:
+def bisection(f: Function, a: float, b: float, stop_condition: Callable[
+    [float, float], bool] = relative_error_condition(), max_iter=200) -> float:
     """find the root of a function using Bisection method
 
     :param f: The function for which the root is sought
