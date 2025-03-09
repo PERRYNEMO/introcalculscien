@@ -2,7 +2,8 @@
 
 """
 import math
-from tp1.newton import newton, bisection, good_for_newton_condition
+
+from tp1.newton import bisection, find_root_best, Function
 
 
 def get_gb(b):
@@ -31,9 +32,6 @@ def h(b):
                           get_second_derivative_gb(b))
 
 
-def find_root_best(f, df, a, b):
-    x = bisection(f, a, b, good_for_newton_condition(f, df))
-    return newton(f, df, x)
 
 
 def find_last_root(b, x0, f, df, max_iter=100):

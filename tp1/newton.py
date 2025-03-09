@@ -2,9 +2,10 @@
 import math
 from typing import Callable
 
+Function = Callable[[float], float]
 
-def good_for_newton_condition(f: Callable[[float], float],
-                              df: Callable[[float], float]) -> Callable[
+
+def good_for_newton_condition(f: Function, df: Function) -> Callable[
     [float, float], bool]:
     """create a function that checks if the bounds are good for
     newton convergence using global newton convergence theorem
@@ -30,6 +31,7 @@ def good_for_newton_condition(f: Callable[[float], float],
 
     return tang_are_good
 
+
 def relative_error_condition(eps: float = 1e-16, delta: float = 1e-16) -> \
         Callable[[float, float], bool]:
     """create relative error function
@@ -39,6 +41,7 @@ def relative_error_condition(eps: float = 1e-16, delta: float = 1e-16) -> \
     :return: lamda function that tells if a and b are close enough
     """
     return lambda a, b: abs(b - a) < eps * (abs(a) + abs(b)) + delta
+
 
 def absolute_error_condition(eps: float = 1e-32) -> Callable[
     [float, float], bool]:
@@ -50,10 +53,8 @@ def absolute_error_condition(eps: float = 1e-32) -> Callable[
     return lambda a, b: abs(b - a) < eps
 
 
-
-def newton(f: Callable[[float], float], df: Callable[[float], float], x0: float,
-           stop_condition: Callable[
-               [float, float], bool] = relative_error_condition(),
+def newton(f: Function, df: Function, x0: float, stop_condition: Callable[
+    [float, float], bool] = relative_error_condition(),
            max_iter: int = 100) -> float:
     """find the root of a function using Newton's method
 
@@ -81,12 +82,12 @@ def newton(f: Callable[[float], float], df: Callable[[float], float], x0: float,
         fx: float = f(x)
         dfx: float = df(x)
         if not math.isfinite(fx):
-            raise ValueError('f is not defined at ' + x)
+            raise ValueError('f is not defined at ' + str(x))
         if not math.isfinite(dfx):
-            raise ValueError('f derivative is not defined at ' + x)
+            raise ValueError('f derivative is not defined at ' + str(x))
         if abs(dfx) < 1e-12:
-            raise ValueError(
-                "f derivative to small at " + x + " newton will not converge")
+            raise ValueError("f derivative to small at " + str(
+                x) + " newton will not converge")
         x0 = x
         x = x - fx / dfx
     if n <= max_iter:
@@ -94,7 +95,7 @@ def newton(f: Callable[[float], float], df: Callable[[float], float], x0: float,
     raise RuntimeError("Newton did not converge")
 
 
-def bisection(f: Callable[[float], float], a: float, b: float,
+def bisection(f: Function, a: float, b: float,
               stop_condition=relative_error_condition(), max_iter=200) -> float:
     """find the root of a function using Bisection method
 
@@ -125,7 +126,7 @@ def bisection(f: Callable[[float], float], a: float, b: float,
         x: float = (a + b) / 2
         fx: float = f(x)
         if not math.isfinite(fx):
-            raise ValueError('f is not defined at ' + x)
+            raise ValueError('f is not defined at ' + str(x))
         if fx > 0:
             a = x
         elif fx < 0:
@@ -135,3 +136,17 @@ def bisection(f: Callable[[float], float], a: float, b: float,
     if n <= max_iter:
         return (a + b) / 2
     raise RuntimeError('bisection takes too long')
+
+
+def find_root_best(f: Function, df: Function, a: float, b: float) -> float:
+    """use both newton and bisection, first it apply bisection to have a good x0
+    for newton
+
+    :param f: the function for which the root is sought
+    :param df: the derivative of the function f
+    :param a: first bound of interval
+    :param b: second bound of interval
+    :return: the computed root
+    """
+    x = bisection(f, a, b, good_for_newton_condition(f, df))
+    return newton(f, df, x)
