@@ -1,6 +1,6 @@
 import math
 
-from tp1.newton import *
+from tp1.newton import bisection, newton
 
 
 def test_newton():
