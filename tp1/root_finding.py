@@ -78,7 +78,7 @@ def find_last_root(b: float, x0: float, f: Function, df: Function,
     :raise ValueError: if the function gb do an overflow at the root
     """
     n: int = 0
-    k: float = math.log(1 / b) * 0.1
+    k: float = (math.log(1 / b ** 2) - x0 / 2) * 0.5
     fx0: float = f(x0)
     tk: float = 100
     ftk: float = f(tk)
@@ -86,16 +86,17 @@ def find_last_root(b: float, x0: float, f: Function, df: Function,
         try:
             tk = x0 + k - f(k + x0) / df(k + x0)
         except OverflowError:
-            k /= 1.05
+            k /= 1.5
         try:
             ftk = f(tk)
+            k /= 1.08
         except OverflowError:
-            k *= 1.1
+            k *= 1.08
         n = n + 1
-        k /= 1.05
     if n > max_iter:
         raise ValueError("we can not find the interval, probably "
                          "the root is to high, the limit for the exp is 710")
+    print(n)
     return find_root_best(f, df, x0, tk)
 
 
@@ -107,9 +108,6 @@ def find_b_star():
     return bisection(lambda b: get_gb(b)(h(b)), 1, 1.5)
 
 
-b_star = find_b_star()
-
-
 def continu(b: float) -> list[float]:
     """calculate the value of a for a b for which the function is continuous
     so the root of gb
@@ -119,14 +117,16 @@ def continu(b: float) -> list[float]:
     """
     if b == 0:
         return [-4, 0]
-
     a1: float = find_root_best(get_gb(b), get_derivative_gb(b), -6, 0)
-
-    if abs(b) > b_star:
+    if b >= 2:
         return [a1]
-    if abs(b) == b_star:
-        return [a1, h(b)]
     hb: float = h(b)
+    fhb: float = get_gb(b)(hb)
+
+    if fhb > 0:
+        return [a1]
+    if fhb == 0:
+        return [a1, hb]
     a2: float = find_root_best(get_gb(b), get_derivative_gb(b), -0.5, hb)
     a3: float = find_last_root(b, hb, get_gb(b), get_derivative_gb(b))
     return [a1, a2, a3]
